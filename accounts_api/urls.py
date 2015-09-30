@@ -8,6 +8,6 @@ urlpatterns = patterns(  # pylint: disable=invalid-name
     '',
     url(
         r'^v1/',
-        include('grades_api.v1.urls', namespace='v1')
+        include('accounts_api.v1.urls', namespace='v1')
     )
 )
