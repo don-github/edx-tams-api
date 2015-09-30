@@ -15,8 +15,7 @@ from rest_framework import permissions
 from social.pipeline.social_auth import associate_user
 from social.apps.django_app import utils as social_utils
 
-from user_api.accounts.api import check_account_exists
-
+from lang_pref import LANGUAGE_KEY
 from microsite_configuration import microsite
 
 import third_party_auth
@@ -28,9 +27,7 @@ from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiv
 from student.views import _do_create_account
 from student.models import create_comments_service_user
 
-from lang_pref import LANGUAGE_KEY
-
-import dogstats_wrapper as dog_stats_api
+from user_api.accounts.api import check_account_exists
 
 log = logging.getLogger(__name__)
 
@@ -134,7 +131,6 @@ class AccountsView(APIView):
 
         # Perform operations that are non-critical parts of account creation
         preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
-        dog_stats_api.increment("common.student.account_created")
 
         create_comments_service_user(user)
 
