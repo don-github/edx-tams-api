@@ -1,18 +1,18 @@
 """
-Errors thrown by the grades api.
+Errors thrown by the accounts api.
 """
 
 
-class GradesAPIRequestError(Exception):
-    """There was a problem with the request to the Grades API. """
+class AccountsAPIRequestError(Exception):
+    """There was a problem with the request to the Accounts API. """
     pass
 
 
-class UserNotFound(GradesAPIRequestError):
+class UserNotFound(AccountsAPIRequestError):
     """The requested user does not exist. """
     pass
 
 
-class UserNotAllowed(GradesAPIRequestError):
-    """The requested user was not allowed to request the grades"""
+class UserNotAllowed(AccountsAPIRequestError):
+    """The requested user was not allowed to request the accounts"""
     pass

@@ -9,4 +9,4 @@ dependencies:
 
 test:
   override:
-    - pylint grades_api
+    - pylint accounts_api

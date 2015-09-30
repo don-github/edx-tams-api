@@ -3,11 +3,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='edx-grades-api',
-    version='1.0.1',
-    description='Grades REST Api for Open edX',
-    author='IONISx',
-    url='https://github.com/IONISx/edx-grades-api',
+    name='edx-accounts-api',
+    version='0.0.1',
+    description='Accounts REST Api for Open edX',
+    author='kencung',
+    url='https://github.com/kencung/edx-accounts-api',
     license='AGPL',
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -1,73 +1,45 @@
 """
 Views for the Accounts API
 """
-
-from user_api.accounts.api import check_account_exists
+import logging
 
 from django.conf import settings
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.utils.translation import get_language
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 
+from social.pipeline.social_auth import associate_user
+from social.apps.django_app import utils as social_utils
+
+from user_api.accounts.api import check_account_exists
+
 from microsite_configuration import microsite
 
-from util.password_policy_validators import (
-    validate_password_length, validate_password_complexity,
-    validate_password_dictionary
-)
-
 import third_party_auth
-from third_party_auth import pipeline, provider
+from third_party_auth import pipeline
 
-from student.views import _do_create_account, AccountValidationError
+from openedx.core.djangoapps.user_api.preferences import api as preferences_api
+from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
 
-from openedx.core.lib.api.authentication import (    # pylint: disable=import-error
-    OAuth2AuthenticationAllowInactiveUser,
-)
+from student.views import _do_create_account
+from student.models import create_comments_service_user
 
-from ..errors import UserNotFound, UserNotAllowed
-from .api import get_user
+from lang_pref import LANGUAGE_KEY
 
-from social.pipeline.social_auth import associate_user
+import dogstats_wrapper as dog_stats_api
+
+log = logging.getLogger(__name__)
 
 class AccountsView(APIView):
 
-    FIELDS = ["email", "name", "username", "password", "honor_code"]
-
     authentication_classes = (
-        OAuth2AuthenticationAllowInactiveUser,
+        OAuth2AuthenticationAllowInactiveUser
     )
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self, request, course_id):
-        """
-        GET /api/grades_api/v1/grades/{course_id}?username={username}
-        """
-
-        course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-        username = request.QUERY_PARAMS.get('username')
-
-        try:
-            user = get_user(request.user, username)
-        except UserNotFound:
-            return Response({
-                'error': 'No such user "{}"'.format(username)
-            }, status=status.HTTP_404_NOT_FOUND)
-        except UserNotAllowed:
-            return Response({
-                'error': 'Not allowed to retrieve grades for "{}"'.format(username)
-            }, status=status.HTTP_403_FORBIDDEN)
-
-        course = get_course_with_access(user, 'load', course_key, depth=None)
-        grade_summary = grades.grade(user, request, course)
-
-        return Response({
-            'username': user.username,
-            'course_id': course_id,
-            'percent': grade_summary.get('percent')
-        })
+    permission_classes = (permissions.IsAuthenticated)
 
     def post(self, request):
         """
@@ -152,44 +124,23 @@ class AccountsView(APIView):
             (user, profile, registration) = _do_create_account(form)
 
             uid = params['uid']
+            backend_name = params['provider']
+            request.social_strategy = social_utils.load_strategy(request)
+            redirect_uri = ''
+            request.backend = social_utils.load_backend(request.social_strategy, backend_name, redirect_uri)
 
             # associate the user with azuread
-            azure_user = associate_user(request.backend, uid, user)
+            associate_user(request.backend, uid, user)
 
         # Perform operations that are non-critical parts of account creation
         preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
-
-        if settings.FEATURES.get('ENABLE_DISCUSSION_EMAIL_DIGEST'):
-            try:
-                enable_notifications(user)
-            except Exception:
-                log.exception("Enable discussion notifications failed for user {id}.".format(id=user.id))
-
         dog_stats_api.increment("common.student.account_created")
-
-        # Track the user's registration
-        if settings.FEATURES.get('SEGMENT_IO_LMS') and hasattr(settings, 'SEGMENT_IO_LMS_KEY'):
-            tracking_context = tracker.get_tracker().resolve_context()
-            analytics.identify(user.id, {
-                'email': user.email,
-                'username': user.username,
-            })
-
-            analytics.track(
-                user.id,
-                "edx.bi.user.account.registered",
-                {
-                    'category': 'conversion',
-                    'label': params.get('course_id'),
-                    'provider': third_party_provider.name if third_party_provider else None
-                },
-                context={
-                    'Google Analytics': {
-                        'clientId': tracking_context.get('client_id')
-                    }
-                }
-            )
 
         create_comments_service_user(user)
 
         registration.activate()
+
+        return {
+            username: user.username,
+            email: user.email
+        }

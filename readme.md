@@ -4,7 +4,7 @@
 [![Requirements Status](https://requires.io/github/IONISx/edx-grades-api/requirements.svg?branch=master)](https://requires.io/github/IONISx/edx-grades-api/requirements/?branch=master)
 [![Pypi Version](https://img.shields.io/pypi/v/edx-grades-api.svg)](https://pypi.python.org/pypi/edx-grades-api)
 
-> Grades REST Api for Open edX
+> Accounts REST Api for Open edX
 
 WARNING: This Django application makes no sense on its own as it depends on [edx-platform](https://github.com/edx/edx-platform).
 
