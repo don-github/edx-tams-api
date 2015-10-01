@@ -22,12 +22,11 @@ import third_party_auth
 from third_party_auth import pipeline
 
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
+from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
 from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
 
 from student.views import _do_create_account
 from student.models import create_comments_service_user
-
-from user_api.accounts.api import check_account_exists
 
 log = logging.getLogger(__name__)
 
