@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='edx-accounts-api',
-    version='0.0.1',
+    version='v0.0.2',
     description='Accounts REST Api for Open edX',
     author='kencung',
     url='https://github.com/kencung/edx-accounts-api',
