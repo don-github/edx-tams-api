@@ -1,5 +1,5 @@
 """
-Utility methods for the Accounts API
+Utility methods for the TAMS API
 """
 
 from django.core.exceptions import ObjectDoesNotExist

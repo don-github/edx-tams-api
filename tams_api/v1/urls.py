@@ -13,11 +13,11 @@ urlpatterns = patterns(  # pylint: disable=invalid-name
     url(
         r'^accounts/' + USERNAME_PATTERN + '$',
         views.AccountsView.as_view(),
-        name='accounts_api'
-    )
-    # url(
-    #     r'^accounts$',
-    #     views.AccountsView.as_view(),
-    #     name='accounts_api'
-    # ),
+        name='tams_api'
+    ),
+    url(
+        r'^accounts$',
+        views.AccountsView.as_view(),
+        name='tams_api'
+    ),
 )

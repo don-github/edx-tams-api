@@ -3,11 +3,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='edx-accounts-api',
-    version='v0.0.2',
-    description='Accounts REST Api for Open edX',
+    name='edx-tams-api',
+    version='v0.0.1',
+    description='TAMS REST API for Open edX',
     author='kencung',
-    url='https://github.com/kencung/edx-accounts-api',
+    url='https://github.com/kencung/edx-tams-api',
     license='AGPL',
     classifiers=[
         'Development Status :: 3 - Alpha',

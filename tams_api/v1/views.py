@@ -30,7 +30,7 @@ from third_party_auth import pipeline
 from student.views import _do_create_account, AccountValidationError
 from student.models import create_comments_service_user
 
-from ..errors import AccountsAPIInternalError, UserNotFound, UserNotAllowed
+from ..errors import TamsApiInternalError, UserNotFound, UserNotAllowed
 from .api import get_user
 
 log = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ class AccountsView(APIView):
 
     def get(self, request, username):
         """
-        GET /api/accounts_api/v1/accounts/{username}
+        GET /api/tams_api/v1/accounts/{username}
         """
 
         try:
@@ -64,7 +64,7 @@ class AccountsView(APIView):
 
     def post(self, request):
         """
-        POST /api/accounts_api/v1/accounts
+        POST /api/tams_api/v1/accounts
             email, username, name, uid
         """
 
@@ -128,7 +128,7 @@ class AccountsView(APIView):
 
         return Response(user)
 
-    @intercept_errors(AccountsAPIInternalError, ignore_errors=[ValidationError, AccountValidationError])
+    @intercept_errors(TamsApiInternalError, ignore_errors=[ValidationError, AccountValidationError])
     def _create_user_account(request, params):
 
         params = dict(params.items())
