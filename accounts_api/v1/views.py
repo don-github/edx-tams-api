@@ -3,7 +3,6 @@ Views for the Accounts API
 """
 import logging
 
-from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.utils.translation import get_language
 
@@ -12,6 +11,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 
+from openedx.core.lib.api.authentication import (    # pylint: disable=import-error
+    SessionAuthenticationAllowInactiveUser,
+    OAuth2AuthenticationAllowInactiveUser,
+)
+from openedx.core.djangoapps.user_api.preferences import api as preferences_api
+from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
+from openedx.core.djangoapps.user_api.helpers import intercept_errors
+
 from social.pipeline.social_auth import associate_user
 from social.apps.django_app import utils as social_utils
 
@@ -19,14 +26,6 @@ from lang_pref import LANGUAGE_KEY
 
 import third_party_auth
 from third_party_auth import pipeline
-
-from openedx.core.djangoapps.user_api.preferences import api as preferences_api
-from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
-from openedx.core.djangoapps.user_api.helpers import intercept_errors
-from openedx.core.lib.api.authentication import (
-    SessionAuthenticationAllowInactiveUser,
-    OAuth2AuthenticationAllowInactiveUser,
-)
 
 from student.views import _do_create_account, AccountValidationError
 from student.models import create_comments_service_user
@@ -38,10 +37,7 @@ log = logging.getLogger(__name__)
 
 class AccountsView(APIView):
 
-    authentication_classes = (
-        OAuth2AuthenticationAllowInactiveUser,
-        SessionAuthenticationAllowInactiveUser
-    )
+    authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, username):
