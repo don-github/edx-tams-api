@@ -14,7 +14,7 @@ urlpatterns = patterns(  # pylint: disable=invalid-name
         r'^accounts/' + USERNAME_PATTERN + '$',
         views.AccountsView.as_view(),
         name='accounts_api'
-    ),
+    )
     # url(
     #     r'^accounts$',
     #     views.AccountsView.as_view(),
