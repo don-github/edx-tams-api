@@ -16,30 +16,37 @@ from social.pipeline.social_auth import associate_user
 from social.apps.django_app import utils as social_utils
 
 from lang_pref import LANGUAGE_KEY
-from microsite_configuration import microsite
 
 import third_party_auth
 from third_party_auth import pipeline
 
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
-from openedx.core.lib.api.authentication import OAuth2AuthenticationAllowInactiveUser
+from openedx.core.djangoapps.user_api.helpers import intercept_errors
+from openedx.core.lib.api.authentication import (
+    SessionAuthenticationAllowInactiveUser,
+    OAuth2AuthenticationAllowInactiveUser,
+)
 
-from student.views import _do_create_account
+from student.views import _do_create_account, AccountValidationError
 from student.models import create_comments_service_user
+
+from ..errors import AccountsAPIInternalError
 
 log = logging.getLogger(__name__)
 
 class AccountsView(APIView):
 
     authentication_classes = (
-        OAuth2AuthenticationAllowInactiveUser
+        OAuth2AuthenticationAllowInactiveUser,
+        SessionAuthenticationAllowInactiveUser
     )
     permission_classes = (permissions.IsAuthenticated)
 
     def post(self, request):
         """
         POST /api/accounts_api/v1/accounts
+            email, username, name, uid
         """
 
         # Only superusers can create an account
@@ -73,11 +80,19 @@ class AccountsView(APIView):
             }
             return Response(errors, status=status.HTTP_409_CONFLICT)
 
-        if data.get("honor_code") and "terms_of_service" not in data:
-            data["terms_of_service"] = data["honor_code"]
+        data["honor_code"] = True;
+        data["terms_of_service"] = True;
 
         try:
+
             user = _create_user_account(request, data)
+
+        except AccountValidationError as err:
+            errors = {
+                field: [{"user_message": err.message}]
+            }
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
         except ValidationError as err:
             # Should only get non-field errors from this function
             assert NON_FIELD_ERRORS not in err.message_dict
@@ -88,28 +103,21 @@ class AccountsView(APIView):
             }
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({
-            username: user.username,
-            email: user.email
-        })
+        except AccountsAPIInternalError as err:
 
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(user)
+
+    @intercept_errors(AccountsAPIInternalError, ignore_errors=[ValidationError, AccountValidationError])
     def _create_user_account(request, params):
 
         params = dict(params.items())
 
         params["password"] = pipeline.make_random_password()
 
-        extra_fields = microsite.get_value(
-            'REGISTRATION_EXTRA_FIELDS',
-            getattr(settings, 'REGISTRATION_EXTRA_FIELDS', {})
-        )
-
-        extended_profile_fields = microsite.get_value('extended_profile_fields', [])
-
         form = AccountCreationForm(
             data=params,
-            extra_fields=extra_fields,
-            extended_profile_fields=extended_profile_fields,
             enforce_username_neq_password=True,
             enforce_password_policy=False,
             tos_required=False
@@ -120,7 +128,7 @@ class AccountsView(APIView):
             (user, profile, registration) = _do_create_account(form)
 
             uid = params['uid']
-            backend_name = params['provider']
+            backend_name = 'azuread-oauth2'
             request.social_strategy = social_utils.load_strategy(request)
             redirect_uri = ''
             request.backend = social_utils.load_backend(request.social_strategy, backend_name, redirect_uri)
@@ -128,12 +136,12 @@ class AccountsView(APIView):
             # associate the user with azuread
             associate_user(request.backend, uid, user)
 
-        # Perform operations that are non-critical parts of account creation
-        preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
+            # Perform operations that are non-critical parts of account creation
+            preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
 
-        create_comments_service_user(user)
+            create_comments_service_user(user)
 
-        registration.activate()
+            registration.activate()
 
         return {
             username: user.username,
