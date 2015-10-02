@@ -1,5 +1,5 @@
 """
-Utility methods for the Grades API
+Utility methods for the Accounts API
 """
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -11,7 +11,7 @@ from ..errors import UserNotFound, UserNotAllowed
 
 def get_user(requesting_user, username):
     """
-    Returns the user to fetch grades for.
+    Returns the user
     """
     user = None
 
@@ -24,7 +24,7 @@ def get_user(requesting_user, username):
         except ObjectDoesNotExist:
             raise UserNotFound
 
-    if user.username != requesting_user.username and not requesting_user.is_staff:
+    if user.username != requesting_user.username and not (requesting_user.is_staff or requesting_user.is_superuser):
         raise UserNotAllowed
 
     # The pre-fetching of groups is done to make auth checks not require an

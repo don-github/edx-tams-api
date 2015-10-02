@@ -31,7 +31,8 @@ from openedx.core.lib.api.authentication import (
 from student.views import _do_create_account, AccountValidationError
 from student.models import create_comments_service_user
 
-from ..errors import AccountsAPIInternalError
+from ..errors import AccountsAPIInternalError, UserNotFound, UserNotAllowed
+from .api import get_user
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +43,28 @@ class AccountsView(APIView):
         SessionAuthenticationAllowInactiveUser
     )
     permission_classes = (permissions.IsAuthenticated)
+
+    def get(self, request, username):
+        """
+        GET /api/accounts_api/v1/accounts/{username}
+        """
+
+        try:
+            user = get_user(request.user, username)
+        except UserNotFound:
+            return Response({
+                'error': 'No such user "{}"'.format(username)
+            }, status=status.HTTP_404_NOT_FOUND)
+        except UserNotAllowed:
+            return Response({
+                'error': 'Not allowed to retrieve grades for "{}"'.format(username)
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        return Response({
+            'username': user.username,
+            'email': user.email
+        })
+
 
     def post(self, request):
         """

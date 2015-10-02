@@ -23,3 +23,13 @@ class AccountEmailInvalid(AccountsAPIRequestError):
     """The requested email is not in a valid format. """
     pass
 
+class UserNotFound(AccountsAPIRequestError):
+    """The requested user does not exist. """
+    pass
+
+
+class UserNotAllowed(AccountsAPIRequestError):
+    """The requested user was not allowed to request the grades"""
+    pass
+
+
