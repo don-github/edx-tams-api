@@ -9,15 +9,15 @@ from . import views
 USERNAME_PATTERN = r'(?P<username>[\w.+-]+)'
 
 urlpatterns = patterns(  # pylint: disable=invalid-name
-    '',
+    'views',
     url(
         r'^accounts/' + USERNAME_PATTERN + '$',
-        views.AccountsView.as_view(),
-        name='tams_api'
+        AccountsView.as_view(),
+        name='accounts_detail'
     ),
     url(
         r'^accounts$',
-        views.AccountsView.as_view(),
-        name='tams_api'
-    ),
+        AccountsView.as_view(),
+        name='accounts_api'
+    )
 )

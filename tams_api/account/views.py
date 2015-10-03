@@ -4,7 +4,6 @@ Views for the Accounts API
 import logging
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.utils.translation import get_language
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,23 +14,12 @@ from openedx.core.lib.api.authentication import (    # pylint: disable=import-er
     SessionAuthenticationAllowInactiveUser,
     OAuth2AuthenticationAllowInactiveUser,
 )
-from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
-from openedx.core.djangoapps.user_api.helpers import intercept_errors
 
-from social.pipeline.social_auth import associate_user
-from social.apps.django_app import utils as social_utils
+from student.views import AccountValidationError
 
-from lang_pref import LANGUAGE_KEY
-
-import third_party_auth
-from third_party_auth import pipeline
-
-from student.views import _do_create_account, AccountValidationError
-from student.models import create_comments_service_user
-
-from ..errors import TamsApiInternalError, UserNotFound, UserNotAllowed
-from .api import get_user
+from ..errors import UserNotFound, UserNotAllowed
+from .api import get_user, create_user_account
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +30,7 @@ class AccountsView(APIView):
 
     def get(self, request, username):
         """
-        GET /api/tams_api/v1/accounts/{username}
+        GET /api/tams_api/accounts/{username}
         """
 
         try:
@@ -64,7 +52,7 @@ class AccountsView(APIView):
 
     def post(self, request):
         """
-        POST /api/tams_api/v1/accounts
+        POST /api/tams_api/accounts
             email, username, name, uid
         """
 
@@ -104,7 +92,7 @@ class AccountsView(APIView):
 
         try:
 
-            user = _create_user_account(request, data)
+            user = create_user_account(request, data)
 
         except AccountValidationError as err:
             errors = {
@@ -128,41 +116,3 @@ class AccountsView(APIView):
 
         return Response(user)
 
-    @intercept_errors(TamsApiInternalError, ignore_errors=[ValidationError, AccountValidationError])
-    def _create_user_account(request, params):
-
-        params = dict(params.items())
-
-        params["password"] = pipeline.make_random_password()
-
-        form = AccountCreationForm(
-            data=params,
-            enforce_username_neq_password=True,
-            enforce_password_policy=False,
-            tos_required=False
-        )
-
-        with transaction.commit_on_success():
-            # first, create the account
-            (user, profile, registration) = _do_create_account(form)
-
-            uid = params['uid']
-            backend_name = 'azuread-oauth2'
-            request.social_strategy = social_utils.load_strategy(request)
-            redirect_uri = ''
-            request.backend = social_utils.load_backend(request.social_strategy, backend_name, redirect_uri)
-
-            # associate the user with azuread
-            associate_user(request.backend, uid, user)
-
-            # Perform operations that are non-critical parts of account creation
-            preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
-
-            create_comments_service_user(user)
-
-            registration.activate()
-
-        return {
-            username: user.username,
-            email: user.email
-        }
