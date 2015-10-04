@@ -112,7 +112,7 @@ class AccountsView(APIView):
 
         except AccountsApiInternalError as err:
 
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({error: err.message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(user)
 
