@@ -1,11 +1,11 @@
 """All Error Types pertaining to TAMS API."""
 
 
-class AccountsApiRequestError(Exception):
+class AccountsAPIRequestError(Exception):
     """There was a problem with the request to the Accounts API. """
     pass
 
-class AccountsApiInternalError(Exception):
+class AccountsAPIInternalError(Exception):
     """An internal error occurred in the Accounts API. """
     pass
 

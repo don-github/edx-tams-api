@@ -19,7 +19,7 @@ from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
 
 from student.views import AccountValidationError
 
-from ..errors import AccountsApiInternalError, UserNotFound, UserNotAllowed
+from ..errors import AccountsAPIInternalError, UserNotFound, UserNotAllowed
 from .api import get_user, create_user_account
 
 log = logging.getLogger(__name__)
@@ -110,7 +110,7 @@ class AccountsView(APIView):
             }
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-        except AccountsApiInternalError as err:
+        except AccountsAPIInternalError as err:
 
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
