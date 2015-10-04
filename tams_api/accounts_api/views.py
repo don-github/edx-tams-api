@@ -111,8 +111,11 @@ class AccountsView(APIView):
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
         except AccountsApiInternalError as err:
+            errors = {
+                field: [{"user_message": err.message}]
+            }
 
-            return Response({error: err.message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(user)
 
