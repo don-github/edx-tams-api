@@ -4,6 +4,7 @@ Utility methods for the TAMS API
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.utils.translation import get_language
+from django.db import transaction
 
 from openedx.core.djangoapps.user_api.preferences import api as preferences_api
 from openedx.core.djangoapps.user_api.helpers import intercept_errors
