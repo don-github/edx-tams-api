@@ -6,5 +6,5 @@ from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns(  # pylint: disable=invalid-name
     '',
-    url(r'^accounts_api/', include('tams_api.account.urls', namespace='accounts_api'))
+    url(r'^v1/', include('tams_api.v1.urls', namespace='v1'))
 )
