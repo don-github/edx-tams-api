@@ -110,9 +110,5 @@ class AccountsView(APIView):
             }
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-        except AccountsAPIInternalError as err:
-
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         return Response(user)
 
