@@ -4,6 +4,7 @@ Views for the Accounts API
 import logging
 
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
+from django.utils.translation import ugettext as _
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -48,7 +49,6 @@ class AccountsView(APIView):
             'username': user.username,
             'email': user.email
         })
-
 
     def post(self, request):
         """
