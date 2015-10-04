@@ -18,6 +18,7 @@ from lang_pref import LANGUAGE_KEY
 
 from student.models import create_comments_service_user, User
 from student.views import _do_create_account, AccountValidationError
+from student.forms import AccountCreationForm
 
 from ..errors import AccountsApiInternalError, UserNotFound, UserNotAllowed
 
