@@ -38,11 +38,13 @@ class AccountsView(APIView):
             user = get_user(request.user, username)
         except UserNotFound:
             return Response({
-                'error': 'No such user "{}"'.format(username)
+                'code': status.HTTP_403_FORBIDDEN,
+                'message': 'No such user "{}"'.format(username)
             }, status=status.HTTP_404_NOT_FOUND)
         except UserNotAllowed:
             return Response({
-                'error': 'Not allowed to retrieve grades for "{}"'.format(username)
+                'code': status.HTTP_403_FORBIDDEN,
+                'message': 'Not allowed to retrieve grades for "{}"'.format(username)
             }, status=status.HTTP_403_FORBIDDEN)
 
         return Response({
@@ -69,23 +71,11 @@ class AccountsView(APIView):
         conflicts = check_account_exists(email=email, username=username)
 
         if conflicts:
-            conflict_messages = {
-                # Translators: This message is shown to users who attempt to create a new
-                # account using an email address associated with an existing account.
-                "email": _(
-                    u"It looks like {email_address} belongs to an existing account. Try again with a different email address."
-                ).format(email_address=email),
-                # Translators: This message is shown to users who attempt to create a new
-                # account using a username associated with an existing account.
-                "username": _(
-                    u"It looks like {username} belongs to an existing account. Try again with a different username."
-                ).format(username=username),
-            }
-            errors = {
-                field: [{"user_message": conflict_messages[field]}]
-                for field in conflicts
-            }
-            return Response(errors, status=status.HTTP_409_CONFLICT)
+            errorMsg = " and ".join(conflicts)
+            return Response({
+                'code': status.HTTP_409_CONFLICT,
+                'message': "{} already used for another account.".format(errorMsg)
+            }, status=status.HTTP_409_CONFLICT)
 
         data["honor_code"] = True;
         data["terms_of_service"] = True;
@@ -95,27 +85,22 @@ class AccountsView(APIView):
             user = create_user_account(request, data)
 
         except AccountValidationError as err:
-            errors = {
-                field: [{"user_message": err.message}]
-            }
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'code': status.HTTP_400_BAD_REQUEST,
+                'field': [{"user_message": err.message}]
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         except ValidationError as err:
-            # Should only get non-field errors from this function
-            assert NON_FIELD_ERRORS not in err.message_dict
-            # Only return first error for each field
             errors = {
-                field: [{"user_message": error} for error in error_list]
-                for field, error_list in err.message_dict.items()
+                'field': [{"user_message": error} for error in error_list] for field, error_list in err.message_dict.items()
             }
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
         except AccountsApiInternalError as err:
-            errors = {
-                field: [{"user_message": err.message}]
-            }
-
-            return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({
+                'code': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'message': err.message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(user)
 
