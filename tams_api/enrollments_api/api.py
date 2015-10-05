@@ -23,17 +23,17 @@ def create_user_enrollment(username, course_id):
     try:
         course_id = CourseKey.from_string(course_id)
     except InvalidKeyError:
-        raise InvalidCourseId
+        raise InvalidCourseId()
 
     try:
-        user = User.objects.get(username)
+        user = User.objects.get(username=username)
     except ObjectDoesNotExist:
-        raise UserNotFound
+        raise UserNotFound()
 
     enrollment = api.get_enrollment(username, unicode(course_id))
 
     if enrollment:
-        raise EnrollmentAlreadyExists
+        raise EnrollmentAlreadyExists()
 
     enrollment = api.add_enrollment(username, unicode(course_id), mode=mode, is_active=is_active)
 

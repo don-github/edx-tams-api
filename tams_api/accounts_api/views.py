@@ -21,6 +21,7 @@ from social.exceptions import AuthAlreadyAssociated
 
 from student.views import AccountValidationError
 
+from ..enrollments_api.api import create_user_enrollment
 from ..errors import TamsApiInternalError, UserNotFound, UserNotAllowed
 from .api import get_user, create_user_account
 
@@ -109,6 +110,16 @@ class AccountsView(APIView):
                 'code': status.HTTP_500_INTERNAL_SERVER_ERROR,
                 'message': err.message
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        course_id = data.get('course_id')
+
+        if course_id:
+            try:
+                enrollment = create_user_enrollment(user.username, course_id)
+            except Exception:
+                enrollment = {}
+
+            user['enrollment'] = enrollment
 
         return Response(user)
 
