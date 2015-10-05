@@ -21,7 +21,7 @@ from social.exceptions import AuthAlreadyAssociated
 
 from student.views import AccountValidationError
 
-from ..errors import AccountsApiInternalError, UserNotFound, UserNotAllowed
+from ..errors import TamsApiInternalError, UserNotFound, UserNotAllowed
 from .api import get_user, create_user_account
 
 log = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ class AccountsView(APIView):
                 'message': err.message
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        except AccountsApiInternalError as err:
+        except TamsApiInternalError as err:
             return Response({
                 'code': status.HTTP_500_INTERNAL_SERVER_ERROR,
                 'message': err.message

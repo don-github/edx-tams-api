@@ -1,35 +1,38 @@
 """All Error Types pertaining to TAMS API."""
 
-
-class AccountsApiRequestError(Exception):
-    """There was a problem with the request to the Accounts API. """
+class TamsApiInternalError(Exception):
+    """An internal error occurred in the TAMS API. """
     pass
 
-class AccountsApiInternalError(Exception):
-    """An internal error occurred in the Accounts API. """
+class TamsApiRequestError(Exception):
+    """There was a problem with the request to the TAMS API. """
     pass
 
-class AccountUserAlreadyExists(AccountsApiRequestError):
+class AccountUserAlreadyExists(TamsApiRequestError):
     """User with the same username and/or email already exists. """
     pass
 
-
-class AccountUsernameInvalid(AccountsApiRequestError):
+class AccountUsernameInvalid(TamsApiRequestError):
     """The requested username is not in a valid format. """
     pass
 
-
-class AccountEmailInvalid(AccountsApiRequestError):
+class AccountEmailInvalid(TamsApiRequestError):
     """The requested email is not in a valid format. """
     pass
 
-class UserNotFound(AccountsApiRequestError):
+class UserNotFound(TamsApiRequestError):
     """The requested user does not exist. """
     pass
 
 
-class UserNotAllowed(AccountsApiRequestError):
+class UserNotAllowed(TamsApiRequestError):
     """The requested user was not allowed to request the grades"""
     pass
 
+class InvalidCourseId(TamsApiRequestError):
+    """The requested course id is not valid. """
+    pass
 
+class EnrollmentAlreadyExists(TamsApiRequestError):
+    """Enrollment already exists. """
+    pass

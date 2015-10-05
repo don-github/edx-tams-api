@@ -22,7 +22,7 @@ from student.models import create_comments_service_user, User
 from student.views import _do_create_account, AccountValidationError
 from student.forms import AccountCreationForm
 
-from ..errors import AccountsApiInternalError, UserNotFound, UserNotAllowed
+from ..errors import TamsApiInternalError, UserNotFound, UserNotAllowed
 
 def get_user(requesting_user, username):
     """
@@ -48,7 +48,7 @@ def get_user(requesting_user, username):
 
     return user
 
-@intercept_errors(AccountsApiInternalError, ignore_errors=[ValidationError, AccountValidationError, AuthAlreadyAssociated])
+@intercept_errors(TamsApiInternalError, ignore_errors=[ValidationError, AccountValidationError, AuthAlreadyAssociated])
 def create_user_account(request, params):
 
     params = dict(params.items())
