@@ -14,6 +14,7 @@ from third_party_auth import pipeline
 
 from social.pipeline.social_auth import associate_user
 from social.apps.django_app import utils as social_utils
+from social.exceptions import AuthAlreadyAssociated
 
 from lang_pref import LANGUAGE_KEY
 
@@ -47,7 +48,7 @@ def get_user(requesting_user, username):
 
     return user
 
-@intercept_errors(AccountsApiInternalError, ignore_errors=[ValidationError, AccountValidationError])
+@intercept_errors(AccountsApiInternalError, ignore_errors=[ValidationError, AccountValidationError, AuthAlreadyAssociated])
 def create_user_account(request, params):
 
     params = dict(params.items())
@@ -82,6 +83,6 @@ def create_user_account(request, params):
         registration.activate()
 
     return {
-        username: user.username,
-        email: user.email
+        'username': user.username,
+        'email': user.email
     }

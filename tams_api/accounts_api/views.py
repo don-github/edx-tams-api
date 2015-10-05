@@ -17,6 +17,8 @@ from openedx.core.lib.api.authentication import (    # pylint: disable=import-er
 )
 from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
 
+from social.exceptions import AuthAlreadyAssociated
+
 from student.views import AccountValidationError
 
 from ..errors import AccountsApiInternalError, UserNotFound, UserNotAllowed
@@ -95,6 +97,12 @@ class AccountsView(APIView):
                 'field': [{"user_message": error} for error in error_list] for field, error_list in err.message_dict.items()
             }
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except AuthAlreadyAssociated as err:
+            return Response({
+                'code': status.HTTP_400_BAD_REQUEST,
+                'message': err.message
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         except AccountsApiInternalError as err:
             return Response({
