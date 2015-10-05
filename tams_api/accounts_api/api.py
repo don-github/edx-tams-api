@@ -78,7 +78,7 @@ def create_user_account(request, params):
         # Perform operations that are non-critical parts of account creation
         preferences_api.set_user_preference(user, LANGUAGE_KEY, get_language())
 
-        create_comments_service_user(user)
+        #create_comments_service_user(user)
 
         registration.activate()
 
