@@ -115,8 +115,10 @@ class AccountsView(APIView):
 
         if course_id:
             try:
-                enrollment = create_user_enrollment(user.username, course_id)
-            except Exception:
+                username = user['username']
+                enrollment = create_user_enrollment(username, course_id)
+            except Exception as err:
+                log.error(err.message)
                 enrollment = {}
 
             user['enrollment'] = enrollment
