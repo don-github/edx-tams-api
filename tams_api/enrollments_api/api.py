@@ -7,6 +7,8 @@ from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 from course_modes.models import CourseMode
 
+from openedx.core.djangoapps.user_api.helpers import intercept_errors
+
 from enrollment import api
 from student.models import User
 
