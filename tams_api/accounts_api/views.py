@@ -88,8 +88,6 @@ class AccountsView(APIView):
 
         username = get_username(strategy=request.social_strategy, details=data)
 
-        log.info("KHUE is testing.  username: {}".format(username['username']))
-
         data["username"] = username['username']
         data["honor_code"] = True;
         data["terms_of_service"] = True;
@@ -128,11 +126,9 @@ class AccountsView(APIView):
             try:
                 username = user['username']
                 enrollment = create_user_enrollment(username, course_id)
+                user['enrolled_course_id'] = enrollment['course_id']
             except Exception as err:
                 log.error(err.message)
-                enrollment = {}
-
-            user['enrollment'] = enrollment
 
         return Response(user)
 
