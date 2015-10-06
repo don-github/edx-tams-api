@@ -88,9 +88,9 @@ class AccountsView(APIView):
 
         username = get_username(strategy=request.social_strategy, details=data)
 
-        log.info("KHUE is testing.  username: {}".format(username))
+        log.info("KHUE is testing.  username: {}".format(username['username']))
 
-        data["username"] = username
+        data["username"] = username['username']
         data["honor_code"] = True;
         data["terms_of_service"] = True;
 
