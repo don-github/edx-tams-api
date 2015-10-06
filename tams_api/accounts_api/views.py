@@ -17,6 +17,8 @@ from openedx.core.lib.api.authentication import (    # pylint: disable=import-er
 )
 from openedx.core.djangoapps.user_api.accounts.api import check_account_exists
 
+from social.pipeline.user import get_username
+from social.apps.django_app import utils as social_utils
 from social.exceptions import AuthAlreadyAssociated
 
 from student.views import AccountValidationError
@@ -68,10 +70,9 @@ class AccountsView(APIView):
         data = request.POST.copy()
 
         email = data.get('email')
-        username = data.get('username')
 
-        # Handle duplicate email/username
-        conflicts = check_account_exists(email=email, username=username)
+        # Handle duplicate email
+        conflicts = check_account_exists(email=email)
 
         if conflicts:
             errorMsg = " and ".join(conflicts)
@@ -80,6 +81,16 @@ class AccountsView(APIView):
                 'message': "{} already used for another account.".format(errorMsg)
             }, status=status.HTTP_409_CONFLICT)
 
+        redirect_uri = ''
+        backend_name = 'azuread-oauth2'
+        request.social_strategy = social_utils.load_strategy(request)
+        request.backend = social_utils.load_backend(request.social_strategy, backend_name, redirect_uri)
+
+        username = get_username(strategy=request.social_strategy, details=data)
+
+        log.info("KHUE is testing.  username: {}".format(username))
+
+        data["username"] = username
         data["honor_code"] = True;
         data["terms_of_service"] = True;
 

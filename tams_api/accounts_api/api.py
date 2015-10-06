@@ -13,7 +13,6 @@ import third_party_auth
 from third_party_auth import pipeline
 
 from social.pipeline.social_auth import associate_user
-from social.apps.django_app import utils as social_utils
 from social.exceptions import AuthAlreadyAssociated
 
 from lang_pref import LANGUAGE_KEY
@@ -67,10 +66,6 @@ def create_user_account(request, params):
         (user, profile, registration) = _do_create_account(form)
 
         uid = params['uid']
-        backend_name = 'azuread-oauth2'
-        request.social_strategy = social_utils.load_strategy(request)
-        redirect_uri = ''
-        request.backend = social_utils.load_backend(request.social_strategy, backend_name, redirect_uri)
 
         # associate the user with azuread
         associate_user(request.backend, uid, user)
