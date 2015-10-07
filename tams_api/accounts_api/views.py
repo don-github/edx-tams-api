@@ -125,8 +125,11 @@ class AccountsView(APIView):
         if course_id:
             try:
                 username = user['username']
+
+                log.info("Enrolling course {} for user {}".format(course_id, username))
+
                 enrollment = create_user_enrollment(username, course_id)
-                user['enrolled_course_id'] = enrollment['course_id']
+                user['enrolled_course_id'] = enrollment['course']['course_id']
             except Exception as err:
                 log.error(err.message)
 
